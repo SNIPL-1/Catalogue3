@@ -126,12 +126,32 @@ function groupBy(array, key) {
 
 function downloadPDF(categoryId, filename) {
   const element = document.getElementById(categoryId);
-  const opt = {
-    margin:       0.5,
-    filename:     filename,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2 },
-    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-  };
-  html2pdf().set(opt).from(element).save();
+  const images = element.querySelectorAll("img");
+
+  // Convert NodeList to Array of Promises
+  const imageLoadPromises = Array.from(images).map(img => {
+    return new Promise(resolve => {
+      if (img.complete) {
+        resolve();
+      } else {
+        img.onload = img.onerror = () => resolve();
+      }
+    });
+  });
+
+  Promise.all(imageLoadPromises).then(() => {
+    const opt = {
+      margin: 0.5,
+      filename: filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+      },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+  });
 }
