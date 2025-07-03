@@ -43,6 +43,18 @@ function renderCatalogue(data) {
 
     container.innerHTML = "";
 
+const categoryWrapper = document.createElement("div");
+categoryWrapper.id = "category-section"; // PDF target
+
+const downloadBtn = document.createElement("button");
+downloadBtn.textContent = "Download as PDF";
+downloadBtn.className = "download-btn";
+downloadBtn.onclick = () => downloadPDF("category-section", `${selected}.pdf`);
+
+container.appendChild(downloadBtn);
+container.appendChild(categoryWrapper);
+
+
     Object.entries(itemsGrouped).forEach(([itemCode, entries]) => {
       const block = document.createElement("div");
       block.className = "item-block";
@@ -97,7 +109,8 @@ table.innerHTML = `
       });
 
       block.appendChild(table);
-      container.appendChild(block);
+      categoryWrapper.appendChild(block);
+
     });
   });
 }
@@ -109,4 +122,16 @@ function groupBy(array, key) {
     result[value].push(item);
     return result;
   }, {});
+}
+
+function downloadPDF(categoryId, filename) {
+  const element = document.getElementById(categoryId);
+  const opt = {
+    margin:       0.5,
+    filename:     filename,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(element).save();
 }
